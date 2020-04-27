@@ -43,6 +43,7 @@ export default class Timeline {
     this.error = false
     this.store = {}
     this.addLatestItem = this.addLatestItem.bind(this)
+    this.initialized = false
   }
 
   static empty() {
@@ -62,7 +63,24 @@ export default class Timeline {
     return this
   }
 
-  async initialFetch() {
+  initialFetch() {
+    if (!this.initialized) {
+      this.initialized = true
+      return this.fetch()
+    }
+  }
+
+  uninitialize() {
+    this.initialized = false
+    this.data = []
+    this.next = []
+    this.index = 0
+    this.keys = []
+    this.loading = false
+    this.error = false
+  }
+
+  async fetch() {
     this.loading = true
     this.index = 0
     this.keys = []
@@ -148,7 +166,7 @@ export default class Timeline {
         console.error(e)
       }
     } else
-      return this.initialFetch()
+      return this.fetch()
     this.loading = false
 
     this.store.dispatch(this.name, this)
@@ -156,25 +174,26 @@ export default class Timeline {
   }
 
   async reset() {
-    return this.initialFetch()
+    return this.fetch()
   }
 
   // Add latest item to current.
   addLatestItem(item, key) {
     // if (!this.isLive)
     //     throw new Error('internal error: attempted to addLatestItem for non-live timeline.')
+    if (this.isLive) {
+      if (this.data[0][this.keyName] === item[this.keyName])
+        console.error('internal error: attempted to add duplicate item to timeline.')
+      else {
+        const data = [item, ...this.data]
+        const next = [data.pop(), ...this.next]
+        this.data = [].concat.apply([], data)
+        this.next.pop()
+        this.next = [].concat.apply([], next)
 
-    if (this.data[0][this.keyName] === item[this.keyName])
-      console.error('internal error: attempted to add duplicate item to timeline.')
-
-    const data = [item, ...this.data]
-    const next = [data.pop(), ...this.next]
-    this.data = [].concat.apply([], data)
-    this.keys.pop()
-    this.keys.push(next.pop())
-    this.next = [].concat.apply([], next)
-
-    this.store.dispatch(this.name, this)
-    return this
+        this.store.dispatch(this.name, this)
+        return this
+      }
+    }
   }
 }
