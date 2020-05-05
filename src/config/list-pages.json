@@ -179,16 +179,16 @@
                 "storeNamespaces": ["nip13"],
                 "managerGetter": "nip13/timeline",
                 "Fields": [
-                    "mosaicId",
                     "securityName",
+                    "mosaicId",
                     "targetAccount",
                     "supply",
                     "startHeight"
                 ],
                 "mobileFields": [
                     "mosaicId",
-                    "mosaicAliasName",
-                    "owneraddress"
+                    "securityName",
+                    "targetAccount"
                 ]
             }
         }
