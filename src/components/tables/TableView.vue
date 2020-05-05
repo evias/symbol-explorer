@@ -75,7 +75,10 @@ export default {
         'restrictionMosaicAdditions',
         'restrictionMosaicDeletions',
         'publicKeyAdditions',
-        'publicKeyDeletions'
+        'publicKeyDeletions',
+
+        // NIP13
+        'targetAccount'
       ],
       disableClickValues: [...Object.values(Constants.Message)],
       changeDecimalColor: [
