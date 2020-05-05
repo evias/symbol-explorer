@@ -18,7 +18,13 @@
 
 import Lock from './lock'
 import Constants from '../config/constants'
-import { NIP13Service, MultisigService, MetadataService } from '../infrastructure'
+import {
+  AccountService,
+  MultisigService,
+  MetadataService,
+  NIP13Service,
+  RestrictionService
+} from '../infrastructure'
 import {
   DataSet,
   Timeline,
@@ -49,6 +55,17 @@ const managers = [
     (key, pageSize, store) => MetadataService.getMosaicMetadataList(store.getters.getCurrentMosaicId, pageSize, key),
     'id',
     10
+  ),
+  new DataSet(
+    'restrictions',
+    (address) => RestrictionService.getMosaicGlobalRestrictionInfo(address)
+  ),
+  new Timeline(
+    'transactions',
+    (pageSize, store) => AccountService.getAccountTransactionList(store.getters.getCurrentAccountAddress, pageSize),
+    (key, pageSize, store) => AccountService.getAccountTransactionList(store.getters.getCurrentAccountAddress, pageSize, key),
+    'transactionId',
+    10
   )
 ]
 
@@ -62,7 +79,7 @@ export default {
     initialized: false,
     currentMosaicId: null,
     currentSecurityName: null,
-    currentAccount: null
+    currentAccountAddress: null
   },
   getters: {
     ...getGettersFromManagers(managers),
@@ -70,14 +87,15 @@ export default {
     // getMosaicRestrictionList: state => state.restrictions?.data.restrictions || [],
     getCurrentMosaicId: state => state.currentMosaicId,
     getCurrentSecurityName: state => state.currentSecurityName,
-    getCurrentAccount: state => state.currentAccount
+    getCurrentAccountAddress: state => state.currentAccountAddress,
+    getMosaicRestrictionList: state => state.restrictions?.data.restrictions || [],
   },
   mutations: {
     ...getMutationsFromManagers(managers),
     setInitialized: (state, initialized) => { state.initialized = initialized },
     setCurrentMosaicId: (state, currentMosaicId) => { state.currentMosaicId = currentMosaicId },
     setCurrentSecurityName: (state, currentSecurityName) => { state.currentSecurityName = currentSecurityName },
-    setCurrentAccount: (state, currentAccount) => { state.currentAccount = currentAccount }
+    setCurrentAccountAddress: (state, currentAccountAddress) => { state.currentAccountAddress = currentAccountAddress }
   },
   actions: {
     ...getActionsFromManagers(managers),
@@ -111,16 +129,25 @@ export default {
 
       context.commit('setCurrentSecurityName', securityInfo.securityName)
       context.commit('setCurrentMosaicId', securityInfo.mosaicId)
-      context.commit('setCurrentAccount', securityInfo.targetAccount)
+      context.commit('setCurrentAccountAddress', securityInfo.targetAccount)
 
-      context.getters.info.setStore(context).initialFetch(securityName)
-      context.getters.operators.setStore(context).initialFetch(securityInfo.targetAccount)
-      context.getters.metadatas.setStore(context).initialFetch(securityInfo.mosaicId)
+      // quick hack to avoid REST error: 429: Too many requests
+      // todo fix with better REST request management
+      setTimeout(() => {
+        context.getters.info.setStore(context).initialFetch(securityName)
+        context.getters.operators.setStore(context).initialFetch(securityInfo.targetAccount)
+        context.getters.metadatas.setStore(context).initialFetch(securityInfo.mosaicId)
+        context.getters.restrictions.setStore(context).initialFetch(securityInfo.mosaicId)
+        context.getters.transactions.setStore(context).initialFetch(securityInfo.targetAccount)
+      }, 500)
     },
 
     uninitializeDetail(context) {
       context.getters.info.setStore(context).uninitialize()
       context.getters.operators.setStore(context).uninitialize()
+      context.getters.metadatas.setStore(context).uninitialize()
+      context.getters.restrictions.setStore(context).uninitialize()
+      context.getters.transactions.setStore(context).uninitialize()
     }
   }
 }
