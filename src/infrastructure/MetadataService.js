@@ -123,6 +123,21 @@ class MetadataService {
     const namespaceMetadata = await this.getNamespaceMetadata(namespaceId, pageSize, id)
     return namespaceMetadata
   }
+
+  /**
+   * Get Mosaic Metadata from symbol SDK
+   * @param mosaicId - Mosaic identifier
+   * @param key - Metadata key
+   * @param sender - Metadata sender
+   * @returns Metadata
+   */
+  static getMosaicMetadataByKeyAndSender = async (mosaicId, key, senderPub) => {
+    const metadata = await http.createRepositoryFactory.createMetadataRepository()
+      .getMosaicMetadataByKeyAndSender(mosaicId, key, senderPub)
+      .toPromise()
+
+    return this.formatMetadata(metadata)
+  }
 }
 
 export default MetadataService

@@ -196,5 +196,8 @@
     "targetPublicAccount": "Address",
     "cosignatories": "Cosignatories",
     "multisigAccounts": "Multisig Accounts",
-    "effectiveFee": "Fee"
+    "effectiveFee": "Fee",
+    "securities": "Securities",
+    "securityName": "Security Name",
+    "targetAccount": "Target Account"
 }

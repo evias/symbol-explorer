@@ -28,6 +28,7 @@ import IconMosaics from 'vue-material-design-icons/CheckboxMultipleBlankCircle.v
 import IconNodes from 'vue-material-design-icons/VectorTriangle.vue'
 import IconNamespaces from 'vue-material-design-icons/Tag.vue'
 import IconStatistics from 'vue-material-design-icons/ChartBar.vue'
+import IconSecurities from 'vue-material-design-icons/Engine.vue'
 
 export default {
   components: {
@@ -38,7 +39,8 @@ export default {
     IconMosaics,
     IconNodes,
     IconNamespaces,
-    IconStatistics
+    IconStatistics,
+    IconSecurities
   },
 
   mounted() {
