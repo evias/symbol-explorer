@@ -509,7 +509,7 @@
                     {
                         "type": "Card",
                         "title": "Security Token",
-                        "fullWidth": true,
+                        "fullWidth": false,
                         "body": "TableInfoView",
                         "fields": [
                             "securityName",
@@ -526,6 +526,19 @@
                     },
                     {
                         "type": "Card",
+                        "title": "Metadata Entries",
+                        "fullWidth": false,
+                        "body": "TableListView",
+                        "fields": [
+                            "scopedMetadataKey",
+                            "metadataValue"
+                        ],
+                        "managerGetter": "nip13/metadatas",
+                        "pagination": true,
+                        "pageSize": 6
+                    },
+                    {
+                        "type": "Card",
                         "title": "Operators",
                         "fullWidth": false,
                         "body": "TableInfoView",
@@ -539,16 +552,40 @@
                     },
                     {
                         "type": "Card",
-                        "title": "Metadata Entries",
+                        "title": "Rules",
                         "fullWidth": false,
                         "body": "TableListView",
                         "fields": [
-                            "scopedMetadataKey",
-                            "metadataValue"
+                            "restrictionKey",
+                            "restrictionType",
+                            "restrictionValue"
                         ],
-                        "managerGetter": "nip13/metadatas",
-                        "pagination": true,
-                        "pageSize": 5
+                        "managerGetter": "nip13/restrictions",
+                        "dataGetter": "nip13/getMosaicRestrictionList",
+                        "pagination": false,
+                        "errorMessage": "Mosaic global restrictions are not available."
+                    },
+                    {
+                        "type": "Card",
+                        "title": "Transactions",
+                        "fullWidth": true,
+                        "header": [
+                            {
+                                "type": "filter-tmp-disabled",
+                                "filterOptionsGetter": "account/transactionFilterOptions",
+                                "filterValueGetter": "account/transactionFilterValue",
+                                "filterChangeAction": "account/setTransactionFilterValue"
+                            }
+                        ],
+                        "body": "TableListView",
+                        "fields": [
+                            "deadline",
+                            "transactionHash",
+                            "transactionType",
+                            "direction"
+                        ],
+                        "managerGetter": "nip13/transactions",
+                        "timelinePagination": true
                     }
                 ]
             }
