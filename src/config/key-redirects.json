@@ -44,5 +44,8 @@
     "linkedNamespace": "namespace",
     "mosaicAliasName": "namespace",
     "targetNamespaceId": "namespace",
-    "unresolved": "namespace"
+    "unresolved": "namespace",
+
+    "targetAccount": "account",
+    "securityName": "security"
 }

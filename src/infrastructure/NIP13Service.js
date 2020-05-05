@@ -18,67 +18,43 @@
 
 import http from './http'
 import helper from '../helper'
-import { Address, MosaicId } from 'symbol-sdk'
 import { DataService, NamespaceService } from '../infrastructure'
 import { Constants } from '../config'
 
 class NIP13Service {
   /**
-   * Gets MosaicInfo for different mosaicIds.
-   * @param mosaicIds[] - Array of mosaic ids
-   * @returns Formatted MosaicInfo[]
-   */
-  static getMosaics = async mosaicIds => {
-    const mosaics = await http.createRepositoryFactory.createMosaicRepository()
-      .getMosaics(mosaicIds).toPromise()
-    const formattedMosaics = mosaics.map(mosaic => this.formatMosaicInfo(mosaic))
+  * Gets the SecurityInfo for a given security
+  * @param mosaicId -  Mosaic id
+  * @returns Formatted MosaicInfo
+  */
+  static getSecurity = async mosaicId => {
+    const mosaic = await http.createRepositoryFactory
+      .createMosaicRepository()
+      .getMosaic(mosaicId)
+      .toPromise()
 
-    return formattedMosaics
+    return this.formatSecurityInfo(mosaic)
   }
 
   /**
-   * Gets the MosaicInfo for a given mosaicId
-   * @param mosaicId -  Mosaic id
-   * @returns Formatted MosaicInfo
-   */
-  static getMosaic = async mosaicId => {
-    const mosaic = await http.createRepositoryFactory.createMosaicRepository()
-      .getMosaic(mosaicId).toPromise()
-
-    const formattedMosaic = this.formatMosaicInfo(mosaic)
-
-    return formattedMosaic
-  }
-
-  /**
-   * Get balance mosaics in form of MosaicAmountViews for a given account address
-   * @param address - Account address
-   * @returns formatted MosaicAmountView[]
-   */
-  static getMosaicAmountView = async address => {
-    const mosaicAmountViews = await http.mosaicService.mosaicsAmountViewFromAddress(Address.createFromRawAddress(address)).toPromise()
-    return mosaicAmountViews.map(mosaicAmountView => this.formatMosaicAmountView(mosaicAmountView))
-  }
-
-  /**
-   * Get formatted MosaicInfo dataset into Vue Component
+   * Get formatted SecurityInfo dataset into Vue Component
    * @param hexOrNamespace - hex value or namespace name
    * @returns MosaicInfo info object
    */
-  static getMosaicInfo = async (hexOrNamespace) => {
-    const mosaicId = await helper.hexOrNamespaceToId(hexOrNamespace, 'mosaic')
-    const mosaicInfo = await this.getMosaic(mosaicId)
+  static getSecurityInfo = async (securityName) => {
+    const mosaicId = await helper.hexOrNamespaceToId(securityName, 'mosaic')
+    const securityInfo = await this.getSecurity(mosaicId)
 
     const mosaicNames = await NamespaceService.getMosaicsNames([mosaicId])
 
     return {
-      ...mosaicInfo,
-      mosaicAliasName: this.extractMosaicNamespace(mosaicInfo, mosaicNames)
+      ...securityInfo,
+      securityName: this.extractSecurityName(securityInfo, mosaicNames)
     }
   }
 
   /**
-   * Get custom MosaicInfo dataset into Vue Component for NIP13 Securities
+   * Get custom SecurityInfo dataset into Vue Component for NIP13 Securities
    * @param limit — No of namespaceInfo
    * @param fromMosaicId — (Optional) retrive next mosaicInfo in pagination
    * @returns Custom MosaicInfo[]
@@ -89,12 +65,11 @@ class NIP13Service {
     const mosaicIdsList = mosaicInfos.map(mosaicInfo => mosaicInfo.id)
     const mosaicNames = await NamespaceService.getMosaicsNames(mosaicIdsList)
 
-    const formattedMosaics = mosaicInfos.map(mosaic => this.formatMosaicInfo(mosaic))
+    const formattedMosaics = mosaicInfos.map(mosaic => this.formatSecurityInfo(mosaic))
 
     return formattedMosaics.map(formattedMosaic => ({
       ...formattedMosaic,
-      targetAccount: formattedMosaic.address,
-      securityName: this.extractMosaicNamespace(formattedMosaic, mosaicNames)
+      securityName: this.extractSecurityName(formattedMosaic, mosaicNames)
     })).filter(
       v => v.securityName && v.securityName.length &&
            v.securityName.startsWith('nip13')
@@ -102,33 +77,15 @@ class NIP13Service {
   }
 
   /**
-   * Get customize MosaicAmountView dataset for Vue component.
-   * @param address - Account address
-   * @returns customize MosaicAmountView[]
-   */
-  static getMosaicAmountViewList = async address => {
-    const mosaicAmountViewInfos = await this.getMosaicAmountView(address)
-
-    const mosaicIdsList = mosaicAmountViewInfos.map(mosaicAmountViewInfo => new MosaicId(mosaicAmountViewInfo.mosaicId))
-    const mosaicNames = await NamespaceService.getMosaicsNames(mosaicIdsList)
-
-    return mosaicAmountViewInfos.map(mosaicAmountViewInfo => ({
-      ...mosaicAmountViewInfo,
-      amount: helper.formatMosaicAmountWithDivisibility(mosaicAmountViewInfo.amount, mosaicAmountViewInfo.divisibility),
-      mosaicAliasName: this.extractMosaicNamespace(mosaicAmountViewInfo, mosaicNames)
-    }))
-  }
-
-  /**
    * Format MosaicInfo to readable mosaicInfo object
    * @param MosaicInfoDTO
    * @returns Object readable MosaicInfoDTO object
    */
-  static formatMosaicInfo = mosaicInfo => ({
+  static formatSecurityInfo = mosaicInfo => ({
     mosaicId: mosaicInfo.id.toHex(),
     divisibility: mosaicInfo.divisibility,
-    address: mosaicInfo.owner.address.plain(),
-    supply: mosaicInfo.supply.compact().toLocaleString('en-US'),
+    targetAccount: mosaicInfo.owner.address.plain(),
+    balance: mosaicInfo.supply.compact().toLocaleString('en-US'),
     relativeAmount: helper.formatMosaicAmountWithDivisibility(mosaicInfo.supply, mosaicInfo.divisibility),
     revision: mosaicInfo.revision,
     startHeight: mosaicInfo.height.compact(),
@@ -139,22 +96,12 @@ class NIP13Service {
   })
 
   /**
-   * format MosaicAmountView to readable object
-   * @param mosaicAmountView - mosaicAmountView DTO
-   * @returns formatted mosaicAmountView
-   */
-  static formatMosaicAmountView = mosaicAmountView => ({
-    ...this.formatMosaicInfo(mosaicAmountView.mosaicInfo),
-    amount: mosaicAmountView.amount.compact()
-  })
-
-  /**
    * Extract Name for Mosaic
    * @param mosaicInfo - mosaicInfo DTO
    * @param mosaicNames - MosaicNames[]
    * @returns mosaicName
    */
-  static extractMosaicNamespace = (mosaicInfo, mosaicNames) => {
+  static extractSecurityName = (mosaicInfo, mosaicNames) => {
     let mosaicName = mosaicNames.find((name) => name.mosaicId === mosaicInfo.mosaicId)
     const name = mosaicName.names.length > 0 ? mosaicName.names[0].name : Constants.Message.UNAVAILABLE
     return name

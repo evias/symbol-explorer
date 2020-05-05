@@ -107,7 +107,7 @@ export default new Vuex.Store({
       case 'transaction-detail':
         return helper.logError(dispatch, 'transaction/getTransactionInfoByHash', route.params.transactionHash || '')
       case 'security-detail':
-        return helper.logError(dispatch, 'mosaic/fetchMosaicInfo', route.params.mosaicId || 0)
+        return helper.logError(dispatch, 'nip13/fetchSecurityInfo', route.params.securityName || 0)
       }
     },
 
@@ -121,7 +121,8 @@ export default new Vuex.Store({
         dispatch('namespace/uninitialize'),
         dispatch('transaction/uninitialize'),
         dispatch('statistic/uninitialize'),
-        dispatch('node/uninitialize')
+        dispatch('node/uninitialize'),
+        dispatch('nip13/uninitialize')
       ])
     },
 

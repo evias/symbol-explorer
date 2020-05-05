@@ -56,4 +56,8 @@ export default class http {
     const namespaceRepository = this.createRepositoryFactory.createNamespaceRepository()
     return new symbol.NamespaceService(namespaceRepository)
   }
+
+  static get namespace() {
+    return this.createRepositoryFactory.createNamespaceRepository()
+  }
 }
