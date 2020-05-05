@@ -75,7 +75,11 @@ export default {
         'restrictionMosaicAdditions',
         'restrictionMosaicDeletions',
         'publicKeyAdditions',
-        'publicKeyDeletions'
+        'publicKeyDeletions',
+
+        // NIP13
+        'targetAccount',
+        'securityName'
       ],
       disableClickValues: [...Object.values(Constants.Message)],
       changeDecimalColor: [
@@ -152,7 +156,8 @@ export default {
                 key === 'owneraddress' ||
                 key === 'host' ||
                 key === 'friendlyName' ||
-                key === 'multisigAccounts_'
+                key === 'multisigAccounts_' ||
+                key === 'targetAccount'
       )
     },
 

@@ -166,6 +166,31 @@
                     "host"
                 ]
             }
+        },
+        {
+            "path": "/securities",
+            "name": "securities",
+            "meta": {
+                "group": "list-page",
+                "keepAliveGoTo": ["detail-page"]
+            },
+            "props": {
+                "title": "securities",
+                "storeNamespaces": ["nip13"],
+                "managerGetter": "nip13/timeline",
+                "Fields": [
+                    "securityName",
+                    "mosaicId",
+                    "targetAccount",
+                    "supply",
+                    "startHeight"
+                ],
+                "mobileFields": [
+                    "mosaicId",
+                    "securityName",
+                    "targetAccount"
+                ]
+            }
         }
     ]
 }

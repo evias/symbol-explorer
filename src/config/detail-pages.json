@@ -496,6 +496,62 @@
                     }
                 ]
             }
+        },
+        {
+            "path": "/security/:securityName",
+            "name": "security-detail",
+            "meta": {
+                "group": "detail-page",
+                "keepAliveGoTo": []
+            },
+            "props": {
+                "schema": [
+                    {
+                        "type": "Card",
+                        "title": "Security Token",
+                        "fullWidth": true,
+                        "body": "TableInfoView",
+                        "fields": [
+                            "securityName",
+                            "mosaicId",
+                            "targetAccount",
+                            "balance",
+                            "revision",
+                            "startHeight",
+                            "duration"
+                        ],
+                        "managerGetter": "nip13/info",
+                        "pagination": false,
+                        "errorMessage": "Security token does not exist."
+                    },
+                    {
+                        "type": "Card",
+                        "title": "Operators",
+                        "fullWidth": false,
+                        "body": "TableInfoView",
+                        "fields": [
+                            "minApproval",
+                            "cosignatories"
+                        ],
+                        "managerGetter": "nip13/operators",
+                        "pagination": false,
+                        "errorMessage": "No operators configured."
+                    },
+                    {
+                        "type": "Card",
+                        "title": "Metadata Entries",
+                        "fullWidth": false,
+                        "body": "TableListView",
+                        "fields": [
+                            "scopedMetadataKey",
+                            "metadataValue"
+                        ],
+                        "managerGetter": "nip13/metadatas",
+                        "pagination": true,
+                        "pageSize": 5
+                    }
+                ]
+            }
         }
     ]
 }

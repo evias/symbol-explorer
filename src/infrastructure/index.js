@@ -13,6 +13,7 @@ import TransactionService from './TransactionService'
 import MultisigService from './MultisigService'
 import NetworkService from './NetworkService'
 import StatisticService from './StatisticService'
+import NIP13Service from './NIP13Service'
 
 export {
   NodeService,
@@ -29,5 +30,6 @@ export {
   BlockService,
   MultisigService,
   NetworkService,
-  StatisticService
+  StatisticService,
+  NIP13Service
 }

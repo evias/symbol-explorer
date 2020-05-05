@@ -24,6 +24,7 @@ import namespace from './namespace'
 import node from './node'
 import transaction from './transaction'
 import statistic from './statistic'
+import nip13 from './nip13'
 import ui from './ui'
 import helper from '../helper'
 import router from '../router'
@@ -45,7 +46,8 @@ export default new Vuex.Store({
     mosaic,
     namespace,
     node,
-    statistic
+    statistic,
+    nip13
   },
   state: {
     destructionList: []
@@ -90,6 +92,8 @@ export default new Vuex.Store({
         return helper.logError(dispatch, 'transaction/initialize')
       case 'statistics':
         return helper.logError(dispatch, 'statistic/initialize')
+      case 'securities':
+        return helper.logError(dispatch, 'nip13/initialize')
 
         // Detail Views
       case 'account-detail':
@@ -102,6 +106,8 @@ export default new Vuex.Store({
         return helper.logError(dispatch, 'namespace/fetchNamespaceInfo', route.params.namespaceId || 0)
       case 'transaction-detail':
         return helper.logError(dispatch, 'transaction/getTransactionInfoByHash', route.params.transactionHash || '')
+      case 'security-detail':
+        return helper.logError(dispatch, 'nip13/fetchSecurityInfo', route.params.securityName || '')
       }
     },
 
@@ -115,7 +121,8 @@ export default new Vuex.Store({
         dispatch('namespace/uninitialize'),
         dispatch('transaction/uninitialize'),
         dispatch('statistic/uninitialize'),
-        dispatch('node/uninitialize')
+        dispatch('node/uninitialize'),
+        dispatch('nip13/uninitialize')
       ])
     },
 
