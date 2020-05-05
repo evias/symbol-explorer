@@ -94,7 +94,7 @@ export default {
       let healthyNodes = []
       await Promise.all(nodes.map(async (url) => {
         let endpoint = helper.parseUrl(url).toString()
-        if (await NodeService.isNodeActive(endpoint))
+// XXX disabled node status check        if (await NodeService.isNodeActive(endpoint))
           healthyNodes.push(url)
       }))
 

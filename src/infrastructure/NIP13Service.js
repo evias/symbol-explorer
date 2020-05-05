@@ -45,11 +45,9 @@ class NIP13Service {
     const mosaicId = await helper.hexOrNamespaceToId(securityName, 'mosaic')
     const securityInfo = await this.getSecurity(mosaicId)
 
-    const mosaicNames = await NamespaceService.getMosaicsNames([mosaicId])
-
     return {
       ...securityInfo,
-      securityName: this.extractSecurityName(securityInfo, mosaicNames)
+      securityName
     }
   }
 
