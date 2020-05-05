@@ -107,7 +107,7 @@ export default new Vuex.Store({
       case 'transaction-detail':
         return helper.logError(dispatch, 'transaction/getTransactionInfoByHash', route.params.transactionHash || '')
       case 'security-detail':
-        return helper.logError(dispatch, 'nip13/fetchSecurityInfo', route.params.securityName || 0)
+        return helper.logError(dispatch, 'nip13/fetchSecurityInfo', route.params.securityName || '')
       }
     },
 
