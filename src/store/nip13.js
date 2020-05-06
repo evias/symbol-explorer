@@ -20,7 +20,6 @@ import Lock from './lock'
 import Constants from '../config/constants'
 import {
   AccountService,
-  MultisigService,
   NIP13Service
 } from '../infrastructure'
 import {
@@ -45,7 +44,11 @@ const managers = [
   ),
   new DataSet(
     'operators',
-    (address) => MultisigService.getMultisigAccountInfo(address)
+    (address) => NIP13Service.getSecurityOperators(address)
+  ),
+  new DataSet(
+    'partitions',
+    (address) => NIP13Service.getSecurityPartitions(address)
   ),
   new DataSet(
     'metadata',
@@ -125,28 +128,33 @@ export default {
       context.dispatch('uninitializeDetail')
 
       // first fetch mosaic data
-      const securityInfo = await NIP13Service.getSecurityInfo(securityName)
+      const securityInfo = await context.getters.info.setStore(context).initialFetch(securityName)
+      const operators = await context.getters.operators.setStore(context).initialFetch(securityInfo.data.targetAccount)
 
-      context.commit('setCurrentSecurityName', securityInfo.securityName)
-      context.commit('setCurrentMosaicId', securityInfo.mosaicId)
-      context.commit('setCurrentAccountAddress', securityInfo.targetAccount)
+      context.commit('setCurrentSecurityName', securityInfo.data.securityName)
+      context.commit('setCurrentMosaicId', securityInfo.data.mosaicId)
+      context.commit('setCurrentAccountAddress', securityInfo.data.targetAccount)
 
       // quick hack to avoid REST error: 429: Too many requests
       // todo fix with better REST request management
       setTimeout(() => {
-        context.getters.info.setStore(context).initialFetch(securityName)
-        context.getters.operators.setStore(context).initialFetch(securityInfo.targetAccount)
-        context.getters.metadata.setStore(context).initialFetch(securityInfo.mosaicId)
-        context.getters.mosaicRestrictions.setStore(context).initialFetch(securityInfo.mosaicId)
-        context.getters.accountRestrictions.setStore(context).initialFetch(securityInfo.targetAccount)
-        context.getters.transactions.setStore(context).initialFetch(securityInfo.targetAccount)
+        context.getters.metadata.setStore(context).initialFetch(securityInfo.data.mosaicId)
+        context.getters.partitions.setStore(context).initialFetch({
+          securityInfo: securityInfo.data,
+          operatorAddress: operators.data.cosignatories[0],
+          targetAccount: securityInfo.data.targetAccount
+        })
+        context.getters.mosaicRestrictions.setStore(context).initialFetch(securityInfo.data.mosaicId)
+        context.getters.accountRestrictions.setStore(context).initialFetch(securityInfo.data.targetAccount)
+        context.getters.transactions.setStore(context).initialFetch(securityInfo.data.targetAccount)
       }, 500)
     },
 
     uninitializeDetail(context) {
       context.getters.info.setStore(context).uninitialize()
-      context.getters.operators.setStore(context).uninitialize()
       context.getters.metadata.setStore(context).uninitialize()
+      context.getters.operators.setStore(context).uninitialize()
+      context.getters.partitions.setStore(context).uninitialize()
       context.getters.mosaicRestrictions.setStore(context).uninitialize()
       context.getters.accountRestrictions.setStore(context).uninitialize()
       context.getters.transactions.setStore(context).uninitialize()
