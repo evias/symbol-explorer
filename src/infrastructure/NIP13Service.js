@@ -18,10 +18,48 @@
 
 import http from './http'
 import helper from '../helper'
-import { DataService, NamespaceService } from '../infrastructure'
+import { DataService, NamespaceService, RestrictionService, MetadataService } from '../infrastructure'
 import { Constants } from '../config'
+import { MosaicId } from 'symbol-sdk'
 
 class NIP13Service {
+  /**
+   * @description Known metadata keys
+   */
+  static KNOWN_METADATAS = {
+    'D434152406E75CA0': 'nip13_token_identifier',
+    '8B5DD479E6AB718A': 'nip13_name',
+    'BC2FC3ACFF58FF89': 'nip13_isin',
+    'D92F12883E1687AA': 'nip13_mic',
+    '9E600698F53ED4F8': 'nip13_iso10962',
+    '985A5AFB4D783C53': 'nip13_website'
+  }
+
+  /**
+   * @description Known restriction keys
+   */
+  static KNOWN_RESTRICTIONS = {
+    '15797563524206624788': 'nip13_user_role'
+  }
+
+  /**
+   * Get known restriction keys from Hex format
+   * @param hexKey - Hexadecimal format of the key (metadata key or restriction key)
+   * @returns string
+   */
+  static getKnownRestrictionKey = (hexKey) => {
+    return hexKey in this.KNOWN_RESTRICTIONS ? this.KNOWN_RESTRICTIONS[hexKey] : hexKey
+  }
+
+  /**
+   * Get known metadata keys from Hex format
+   * @param hexKey - Hexadecimal format of the key (metadata key or restriction key)
+   * @returns string
+   */
+  static getKnownMetadataKey = (hexKey) => {
+    return hexKey in this.KNOWN_METADATAS ? this.KNOWN_METADATAS[hexKey] : hexKey
+  }
+
   /**
   * Gets the SecurityInfo for a given security
   * @param mosaicId -  Mosaic id
@@ -38,7 +76,7 @@ class NIP13Service {
 
   /**
    * Get formatted SecurityInfo dataset into Vue Component
-   * @param hexOrNamespace - hex value or namespace name
+   * @param securityName - Name of the security token
    * @returns MosaicInfo info object
    */
   static getSecurityInfo = async (securityName) => {
@@ -103,6 +141,74 @@ class NIP13Service {
     let mosaicName = mosaicNames.find((name) => name.mosaicId === mosaicInfo.mosaicId)
     const name = mosaicName.names.length > 0 ? mosaicName.names[0].name : Constants.Message.UNAVAILABLE
     return name
+  }
+
+  /**
+   * Get Mosaic restrictions dataset into Vue component
+   * @param securityName - Name of the security token
+   * @returns Mosaic Global Restriction info
+   */
+  static getMosaicRestrictionsInfo = async (securityName) => {
+    const mosaicId = await helper.hexOrNamespaceToId(securityName, 'mosaic')
+    const mosaicRestrictions = await RestrictionService.getMosaicGlobalRestriction(mosaicId)
+
+    // overwrite `restrictions` values to rewrite keys
+    return {
+      ...mosaicRestrictions,
+      restrictions: mosaicRestrictions.restrictions.map(restriction => ({
+        referenceMosaicId: restriction.referenceMosaicId,
+        restrictionKey: this.getKnownRestrictionKey(restriction.restrictionKey),
+        restrictionType: restriction.restrictionType,
+        restrictionValue: restriction.restrictionValue
+      }))
+    }
+  }
+
+  /**
+   * Get Mosaic restrictions dataset into Vue component
+   * @param targetAccount - Address of the target account
+   * @returns Mosaic Global Restriction info
+   */
+  static getAccountRestrictionsInfo = async (targetAccount) => {
+    const accountRestrictions = await RestrictionService.getAccountRestrictions(targetAccount)
+    return accountRestrictions
+  }
+
+  /**
+   * Get securities metadata dataset into Vue component.
+   * @param mosaicId - Mosaic id
+   * @returns Mosaic Metadata list
+   */
+  static getSecurityMetadata = async (mosaicId) => {
+    const mosaicMetadata = await MetadataService.getMosaicMetadata(new MosaicId(mosaicId), 10)
+
+    // overwrite `scopeMetadataKey` values to rewrite keys
+    const metadataFields = Object.keys(this.KNOWN_METADATAS)
+    let out = {}
+    mosaicMetadata.sort((a, b) => {
+      const indexA = metadataFields.findIndex(v => v === a.scopedMetadataKey)
+      const indexB = metadataFields.findIndex(v => v === b.scopedMetadataKey)
+      return indexA - indexB
+    })
+    // reduce to only include listed known metadatas
+    .reduce((prev, it) => {
+
+      // first known metadata field
+      if (prev && metadataFields.indexOf(prev.scopedMetadataKey) !== -1) {
+        const key = this.getKnownMetadataKey(prev.scopedMetadataKey)
+        out[key] = mosaicMetadata.find(m => m.scopedMetadataKey === prev.scopedMetadataKey).metadataValue
+      }
+
+      // rest of metadata fields
+      if (metadataFields.indexOf(it.scopedMetadataKey) !== -1) {
+        const key = this.getKnownMetadataKey(it.scopedMetadataKey)
+        out[key] = mosaicMetadata.find(m => m.scopedMetadataKey === it.scopedMetadataKey).metadataValue
+      }
+
+      return out
+    })
+
+    return out
   }
 }
 

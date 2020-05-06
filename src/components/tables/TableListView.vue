@@ -47,10 +47,12 @@
                                     :to="getItemHref(itemKey, item)"
                                 >
                                     <Truncate v-if="isTruncate(itemKey)">{{item}}</Truncate>
+                                    <div v-else-if="isTranslateable(item)">{{getKeyName(item)}}</div>
                                     <div v-else>{{ item }}</div>
                                 </router-link>
                                 <div v-else>
                                     <Truncate v-if="isTruncate(itemKey)">{{item}}</Truncate>
+                                    <div v-else-if="isTranslateable(item)">{{getKeyName(item)}}</div>
                                     <div v-else>{{ item }}</div>
                                 </div>
                             </div>
