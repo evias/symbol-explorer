@@ -581,6 +581,19 @@
                     },
                     {
                         "type": "Card",
+                        "title": "Partitions",
+                        "fullWidth": false,
+                        "body": "TableListView",
+                        "managerGetter": "nip13/partitions",
+                        "fields": [
+                            "address",
+                            "mosaics"
+                        ],
+                        "pagination": false,
+                        "errorMessage": "No partitions configured."
+                    },
+                    {
+                        "type": "Card",
                         "title": "Transactions",
                         "fullWidth": true,
                         "header": [

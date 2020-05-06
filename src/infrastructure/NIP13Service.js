@@ -18,9 +18,10 @@
 
 import http from './http'
 import helper from '../helper'
-import { DataService, NamespaceService, RestrictionService, MetadataService } from '../infrastructure'
+import { DataService, NamespaceService, RestrictionService, MetadataService, MultisigService } from '../infrastructure'
 import { Constants } from '../config'
 import { MosaicId } from 'symbol-sdk'
+import AccountService from './AccountService'
 
 class NIP13Service {
   /**
@@ -189,10 +190,8 @@ class NIP13Service {
       const indexA = metadataFields.findIndex(v => v === a.scopedMetadataKey)
       const indexB = metadataFields.findIndex(v => v === b.scopedMetadataKey)
       return indexA - indexB
-    })
-    // reduce to only include listed known metadatas
-    .reduce((prev, it) => {
-
+    }).reduce((prev, it) => {
+      // reduce to only include listed known metadatas
       // first known metadata field
       if (prev && metadataFields.indexOf(prev.scopedMetadataKey) !== -1) {
         const key = this.getKnownMetadataKey(prev.scopedMetadataKey)
@@ -209,6 +208,48 @@ class NIP13Service {
     })
 
     return out
+  }
+
+  /**
+   * Get operators dataset for Vue component
+   * @param address - Account Address
+   * @returns customize MultisigAccountInfo
+   */
+  static getSecurityOperators = async address => {
+    const multisigAccountInfo = await MultisigService.getMultisigAccount(address)
+    return {
+      ...multisigAccountInfo,
+      cosignatories: multisigAccountInfo?.cosignatories?.map(cosigner => cosigner.address),
+      multisigAccounts: multisigAccountInfo?.multisigAccounts?.map(cosigner => cosigner.address)
+    }
+  }
+
+  /**
+   * Get partitions dataset for Vue component
+   * @param address - Account Address
+   * @returns customize MultisigAccountInfo
+   */
+  static getSecurityPartitions = async (payload) => {
+    const cosig = await MultisigService.getMultisigAccount(payload.operatorAddress)
+    if (!cosig || !cosig.multisigAccounts || !cosig.multisigAccounts.length) return []
+
+    // filter out target account
+    const accounts = cosig.multisigAccounts.map(m => m.address).filter(
+      addr => addr !== payload.targetAccount
+    )
+
+    // read partitions information
+    const partitions = await AccountService.getAccounts(accounts)
+
+    // overwrite mosaics to hold security token name
+    return partitions.map(partition => ({
+      ...partition,
+      mosaics: partition.mosaics.map(
+        mosaic => ({
+          id: payload.securityInfo.securityName,
+          amount: mosaic.amount.compact().toString()
+        }))
+    }))
   }
 }
 
