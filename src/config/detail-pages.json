@@ -528,12 +528,16 @@
                         "type": "Card",
                         "title": "Metadata Entries",
                         "fullWidth": false,
-                        "body": "TableListView",
+                        "body": "TableInfoView",
+                        "managerGetter": "nip13/metadata",
                         "fields": [
-                            "scopedMetadataKey",
-                            "metadataValue"
+                            "nip13_token_identifier",
+                            "nip13_name",
+                            "nip13_isin",
+                            "nip13_mic",
+                            "nip13_iso10962",
+                            "nip13_website"
                         ],
-                        "managerGetter": "nip13/metadatas",
                         "pagination": true,
                         "pageSize": 6
                     },
@@ -552,7 +556,7 @@
                     },
                     {
                         "type": "Card",
-                        "title": "Rules",
+                        "title": "Token Rules",
                         "fullWidth": false,
                         "body": "TableListView",
                         "fields": [
@@ -560,10 +564,20 @@
                             "restrictionType",
                             "restrictionValue"
                         ],
-                        "managerGetter": "nip13/restrictions",
-                        "dataGetter": "nip13/getMosaicRestrictionList",
+                        "managerGetter": "nip13/mosaicRestrictions",
+                        "dataGetter": "nip13/getMosaicRestrictionsList",
                         "pagination": false,
-                        "errorMessage": "Mosaic global restrictions are not available."
+                        "errorMessage": "Mosaic restrictions are not available."
+                    },
+                    {
+                        "type": "Card",
+                        "title": "Accounts Rules",
+                        "fullWidth": false,
+                        "body": "TableListView",
+                        "managerGetter": "nip13/accountRestrictions",
+                        "pagination": false,
+                        "pageSize": 5,
+                        "errorMessage": "Account restrictions are not available."
                     },
                     {
                         "type": "Card",
