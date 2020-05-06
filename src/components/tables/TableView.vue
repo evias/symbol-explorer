@@ -79,7 +79,8 @@ export default {
 
         // NIP13
         'targetAccount',
-        'securityName'
+        'securityName',
+        'nip13_name'
       ],
       disableClickValues: [...Object.values(Constants.Message)],
       changeDecimalColor: [
@@ -105,6 +106,15 @@ export default {
         'restrictionOperationDeletions',
         'publicKeyAdditions',
         'publicKeyDeletions'
+      ],
+      translateableValues: [
+        'nip13_token_identifier',
+        'nip13_isin',
+        'nip13_mic',
+        'nip13_name',
+        'nip13_iso10962',
+        'nip13_website',
+        'nip13_user_role'
       ]
     }
   },
@@ -159,6 +169,10 @@ export default {
                 key === 'multisigAccounts_' ||
                 key === 'targetAccount'
       )
+    },
+
+    isTranslateable(key) {
+      return this.translateableValues.indexOf(key) !== -1
     },
 
     isAggregateInnerTransaction(itemKey) {

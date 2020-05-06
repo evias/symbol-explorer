@@ -47,5 +47,6 @@
     "unresolved": "namespace",
 
     "targetAccount": "account",
-    "securityName": "security"
+    "securityName": "security",
+    "nip13_name": "security"
 }

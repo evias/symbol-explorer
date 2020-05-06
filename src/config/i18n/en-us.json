@@ -199,5 +199,13 @@
     "effectiveFee": "Fee",
     "securities": "Securities",
     "securityName": "Security Name",
-    "targetAccount": "Target Account"
+    "targetAccount": "Target Account",
+    "nip13_token_identifier": "Token Identifier",
+    "nip13_isin": "ISIN",
+    "nip13_mic": "MIC",
+    "nip13_name": "NAME",
+    "nip13_iso10962": "Classification",
+    "nip13_website": "Website",
+    "nip13_user_role": "User_Role"
+
 }

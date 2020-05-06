@@ -21,9 +21,7 @@ import Constants from '../config/constants'
 import {
   AccountService,
   MultisigService,
-  MetadataService,
-  NIP13Service,
-  RestrictionService
+  NIP13Service
 } from '../infrastructure'
 import {
   DataSet,
@@ -49,16 +47,17 @@ const managers = [
     'operators',
     (address) => MultisigService.getMultisigAccountInfo(address)
   ),
-  new Timeline(
-    'metadatas',
-    (pageSize, store) => MetadataService.getMosaicMetadataList(store.getters.getCurrentMosaicId, pageSize),
-    (key, pageSize, store) => MetadataService.getMosaicMetadataList(store.getters.getCurrentMosaicId, pageSize, key),
-    'id',
-    10
+  new DataSet(
+    'metadata',
+    (mosaicId) => NIP13Service.getSecurityMetadata(mosaicId)
   ),
   new DataSet(
-    'restrictions',
-    (address) => RestrictionService.getMosaicGlobalRestrictionInfo(address)
+    'mosaicRestrictions',
+    (securityName) => NIP13Service.getMosaicRestrictionsInfo(securityName)
+  ),
+  new DataSet(
+    'accountRestrictions',
+    (address) => NIP13Service.getAccountRestrictionsInfo(address)
   ),
   new Timeline(
     'transactions',
@@ -88,7 +87,8 @@ export default {
     getCurrentMosaicId: state => state.currentMosaicId,
     getCurrentSecurityName: state => state.currentSecurityName,
     getCurrentAccountAddress: state => state.currentAccountAddress,
-    getMosaicRestrictionList: state => state.restrictions?.data.restrictions || [],
+    getMosaicRestrictionsList: state => state.mosaicRestrictions?.data.restrictions || [],
+    getAccountRestrictionsList: state => state.accountRestrictions?.data.restrictions || []
   },
   mutations: {
     ...getMutationsFromManagers(managers),
@@ -136,8 +136,9 @@ export default {
       setTimeout(() => {
         context.getters.info.setStore(context).initialFetch(securityName)
         context.getters.operators.setStore(context).initialFetch(securityInfo.targetAccount)
-        context.getters.metadatas.setStore(context).initialFetch(securityInfo.mosaicId)
-        context.getters.restrictions.setStore(context).initialFetch(securityInfo.mosaicId)
+        context.getters.metadata.setStore(context).initialFetch(securityInfo.mosaicId)
+        context.getters.mosaicRestrictions.setStore(context).initialFetch(securityInfo.mosaicId)
+        context.getters.accountRestrictions.setStore(context).initialFetch(securityInfo.targetAccount)
         context.getters.transactions.setStore(context).initialFetch(securityInfo.targetAccount)
       }, 500)
     },
@@ -145,8 +146,9 @@ export default {
     uninitializeDetail(context) {
       context.getters.info.setStore(context).uninitialize()
       context.getters.operators.setStore(context).uninitialize()
-      context.getters.metadatas.setStore(context).uninitialize()
-      context.getters.restrictions.setStore(context).uninitialize()
+      context.getters.metadata.setStore(context).uninitialize()
+      context.getters.mosaicRestrictions.setStore(context).uninitialize()
+      context.getters.accountRestrictions.setStore(context).uninitialize()
       context.getters.transactions.setStore(context).uninitialize()
     }
   }
