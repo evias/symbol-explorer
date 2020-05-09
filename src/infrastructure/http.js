@@ -27,7 +27,7 @@ export default class http {
   static init = async (nodeUrl, marketDataUrl) => {
     NODE_URL = nodeUrl
     MARKET_DATA_URL = marketDataUrl
-    NETWORK_TYPE = await http.createRepositoryFactory.getNetworkType().toPromise() || constants.NetworkConfig.NETWORKTYPE
+    NETWORK_TYPE = constants.NetworkConfig.NETWORKTYPE
   }
 
   static get marketDataUrl() {
@@ -43,7 +43,7 @@ export default class http {
   }
 
   static get createRepositoryFactory() {
-    return new symbol.RepositoryFactoryHttp(this.nodeUrl)
+    return new symbol.RepositoryFactoryHttp(this.nodeUrl, this.networkType)
   }
 
   static get mosaicService() {
