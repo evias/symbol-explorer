@@ -18,12 +18,20 @@
 
 import http from './http'
 import helper from '../helper'
-import { DataService, NamespaceService, RestrictionService, MetadataService, MultisigService } from '../infrastructure'
+import { NamespaceService, RestrictionService, MetadataService, MultisigService } from '../infrastructure'
 import { Constants } from '../config'
-import { MosaicId } from 'symbol-sdk'
+import { MosaicId, PublicAccount } from 'symbol-sdk'
+import { NIP13, NetworkConfig } from 'symbol-token-standards'
 import AccountService from './AccountService'
 
 class NIP13Service {
+  /**
+   * @description Known token authorities (registrars)
+   */
+  static KNOWN_AUTHORITIES = [
+    '612D8637C9CABF44CB0B4AB7552B0C2F817A9929CE3636E116B73228833D742F'
+  ]
+
   /**
    * @description Known metadata keys
    */
@@ -62,6 +70,21 @@ class NIP13Service {
   }
 
   /**
+   * Helper function to instanciate a NIP13 NetworkConfig
+   *
+   * @return {NIP13.NetworkConfig}
+   */
+  static getNetworkConfig = () => {
+    const factoryHttp = http.createRepositoryFactory
+    return new NetworkConfig(
+      http.nodeUrl,
+      http.networkType,
+      factoryHttp.generationHash,
+      new MosaicId(Constants.NetworkConfig.NATIVE_MOSAIC_HEX)
+    )
+  }
+
+  /**
   * Gets the SecurityInfo for a given security
   * @param mosaicId -  Mosaic id
   * @returns Formatted MosaicInfo
@@ -97,20 +120,33 @@ class NIP13Service {
    * @returns Custom MosaicInfo[]
    */
   static getSecuritiesList = async (limit, fromMosaicId) => {
-    const mosaicInfos = await DataService.getMosaicsByIdWithLimit(limit, fromMosaicId)
+    const networkType = http.networkType
+
+    // create known authority
+    const authority = PublicAccount.createFromPublicKey(
+      NIP13Service.KNOWN_AUTHORITIES[0],
+      networkType
+    )
+
+    // read NIP13 tokens registered under authority
+    const mosaicIds = await NIP13.TokenAuthority.getTokens(
+      authority,
+      this.getNetworkConfig()
+    )
+
+    // read mosaic infos
+    const mosaicInfos = await http.createRepositoryFactory.createMosaicRepository()
+      .getMosaics(mosaicIds)
+      .toPromise()
 
     const mosaicIdsList = mosaicInfos.map(mosaicInfo => mosaicInfo.id)
     const mosaicNames = await NamespaceService.getMosaicsNames(mosaicIdsList)
-
     const formattedMosaics = mosaicInfos.map(mosaic => this.formatSecurityInfo(mosaic))
 
     return formattedMosaics.map(formattedMosaic => ({
       ...formattedMosaic,
       securityName: this.extractSecurityName(formattedMosaic, mosaicNames)
-    })).filter(
-      v => v.securityName && v.securityName.length &&
-           v.securityName.startsWith('nip13')
-    )
+    }))
   }
 
   /**
@@ -244,7 +280,9 @@ class NIP13Service {
     // overwrite mosaics to hold security token name
     return partitions.map(partition => ({
       ...partition,
-      mosaics: partition.mosaics.map(
+      mosaics: partition.mosaics.filter(
+        m => m.id.toHex() === payload.securityInfo.mosaicId
+      ).map(
         mosaic => ({
           id: payload.securityInfo.securityName,
           amount: mosaic.amount.compact().toString()
